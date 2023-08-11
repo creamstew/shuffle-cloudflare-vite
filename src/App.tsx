@@ -1,10 +1,6 @@
-import { useState, useEffect } from "react";
-
-type Person = {
-  name: string;
-  job: string;
-  department: string;
-};
+import type { Person } from "@/types/Person";
+import { useState } from "react";
+import useSWR from "swr";
 
 type JobListProps = {
   job: string;
@@ -28,7 +24,13 @@ const JobList = ({ job, people }: JobListProps) => {
   );
 };
 
-const useShuffleAndGroupPeople = (data: Person[], numGroups: number) => {
+const useShuffleAndGroupPeople = (
+  data: Person[] | undefined,
+  numGroups: number
+) => {
+  if (!data) {
+    return () => [];
+  }
   // Fisher-Yates shuffle algorithm
   const shuffleArray = (array: Person[]) => {
     const shuffledArray = [...array];
@@ -73,70 +75,10 @@ const useShuffleAndGroupPeople = (data: Person[], numGroups: number) => {
   return shuffleAndGroupPeople;
 };
 
-const data: Person[] = [
-  {
-    name: "山田 太郎",
-    job: "エンジニア",
-    department: "プロダクト事業部",
-  },
-  {
-    name: "佐藤 次郎",
-    job: "エンジニア",
-    department: "プロダクト事業部",
-  },
-  {
-    name: "鈴木 三郎",
-    job: "エンジニア",
-    department: "プロダクト事業部",
-  },
-  {
-    name: "高橋 四郎",
-    job: "エンジニア",
-    department: "プロダクト事業部",
-  },
-  {
-    name: "田中 五郎",
-    job: "エンジニア",
-    department: "プロダクト事業部",
-  },
-  {
-    name: "伊藤 六郎",
-    job: "デザイナー",
-    department: "プロダクト事業部",
-  },
-  {
-    name: "渡辺 七郎",
-    job: "デザイナー",
-    department: "プロダクト事業部",
-  },
-  {
-    name: "山本 八郎",
-    job: "デザイナー",
-    department: "プロダクト事業部",
-  },
-  {
-    name: "中村 九郎",
-    job: "セールス",
-    department: "セールス事業部",
-  },
-  {
-    name: "小林 十郎",
-    job: "セールス",
-    department: "セールス事業部",
-  },
-  {
-    name: "加藤 十一郎",
-    job: "セールス",
-    department: "セールス事業部",
-  },
-  {
-    name: "吉田 十二郎",
-    job: "セールス",
-    department: "セールス事業部",
-  },
-];
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 function App() {
+  const { data, error, isLoading } = useSWR<Person[]>("/api/people", fetcher);
   const [groups, setGroups] = useState<Person[][]>([]);
   const [numGroups, setNumGroups] = useState<number>(2);
   const [isMembersVisible, setIsMembersVisible] = useState(false);
@@ -145,22 +87,13 @@ function App() {
 
   const handleShuffle = () => setGroups(shuffleAndGroupPeople());
 
+  if (error) return <div>failed to load</div>;
+  if (isLoading || !data) return <div>loading...</div>;
+
   const jobs = Array.from(new Set(data.map((person) => person.job)));
-
-  const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const res = await fetch("/api/hello");
-      const data = await res.json();
-      setMessage(data.message);
-    };
-    fetchData();
-  }, []);
 
   return (
     <div>
-      <h1>{message}</h1>
       <h3 onClick={() => setIsMembersVisible((prev) => !prev)}>
         メンバー (クリックして表示)
       </h3>
