@@ -1,22 +1,22 @@
-import type { Person } from "@/types/Person";
+import type { User } from "@/types/User";
 import { useCallback, useState } from "react";
 import useSWR from "swr";
 
 type JobListProps = {
   job: string;
-  people: Person[];
+  users: User[];
 };
 
-const JobList = ({ job, people }: JobListProps) => {
-  const filteredPeople = people.filter((person) => person.job === job);
+const JobList = ({ job, users }: JobListProps) => {
+  const filteredUsers = users.filter((user) => user.job === job);
 
   return (
     <div>
       <h4>職種: {job}</h4>
       <ul>
-        {filteredPeople.map((person) => (
-          <li key={person.name}>
-            {person.name} - ({person.department})
+        {filteredUsers.map((user) => (
+          <li key={user.name}>
+            {user.name} - ({user.department})
           </li>
         ))}
       </ul>
@@ -24,15 +24,15 @@ const JobList = ({ job, people }: JobListProps) => {
   );
 };
 
-const useShuffleAndGroupPeople = (
-  data: Person[] | undefined,
+const useShuffleAndGroupUsers = (
+  data: User[] | undefined,
   numGroups: number
 ) => {
   if (!data) {
     return () => [];
   }
   // Fisher-Yates shuffle algorithm
-  const shuffleArray = (array: Person[]) => {
+  const shuffleArray = (array: User[]) => {
     const shuffledArray = [...array];
     for (let i = shuffledArray.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -45,34 +45,34 @@ const useShuffleAndGroupPeople = (
   };
 
   // Shuffle and group logic
-  const shuffleAndGroupPeople = () => {
-    const shuffledPeople = shuffleArray([...data]);
-    const numPeople = shuffledPeople.length;
-    const numGroupsToCreate = Math.min(numGroups, numPeople);
-    const result: Person[][] = Array.from(
+  const shuffleAndGroupUsers = () => {
+    const shuffledUsers = shuffleArray([...data]);
+    const numUsers = shuffledUsers.length;
+    const numGroupsToCreate = Math.min(numGroups, numUsers);
+    const result: User[][] = Array.from(
       { length: numGroupsToCreate },
       () => []
     );
-    const buckets: Record<string, Person[]> = {};
+    const buckets: Record<string, User[]> = {};
 
-    shuffledPeople.forEach((person) => {
-      const key = person.job + person.department;
-      buckets[key] = (buckets[key] || []).concat(person);
+    shuffledUsers.forEach((user) => {
+      const key = user.job + user.department;
+      buckets[key] = (buckets[key] || []).concat(user);
     });
 
     let currentGroupIndex = 0;
-    const assignPersonToGroup = (person: Person) => {
-      result[currentGroupIndex].push(person);
+    const assignUserToGroup = (user: User) => {
+      result[currentGroupIndex].push(user);
       currentGroupIndex = (currentGroupIndex + 1) % numGroupsToCreate;
     };
     Object.values(buckets).forEach((bucket) => {
-      bucket.forEach(assignPersonToGroup);
+      bucket.forEach(assignUserToGroup);
     });
 
     return result;
   };
 
-  return shuffleAndGroupPeople;
+  return shuffleAndGroupUsers;
 };
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -80,22 +80,22 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 const DEFAULT_NUM_GROUPS = 2;
 
 function App() {
-  const { data, error, isLoading } = useSWR<Person[]>("/api/people", fetcher);
-  const [groups, setGroups] = useState<Person[][]>([]);
+  const { data, error, isLoading } = useSWR<User[]>("/api/users", fetcher);
+  const [groups, setGroups] = useState<User[][]>([]);
   const [numGroups, setNumGroups] = useState<number>(DEFAULT_NUM_GROUPS);
   const [isMembersVisible, setIsMembersVisible] = useState(false);
 
-  const shuffleAndGroupPeople = useShuffleAndGroupPeople(data, numGroups);
+  const shuffleAndGroupUsers = useShuffleAndGroupUsers(data, numGroups);
 
   const handleShuffle = useCallback(
-    () => setGroups(shuffleAndGroupPeople()),
-    [shuffleAndGroupPeople]
+    () => setGroups(shuffleAndGroupUsers()),
+    [shuffleAndGroupUsers]
   );
 
   if (error) return <div>failed to load</div>;
   if (isLoading || !data) return <div>loading...</div>;
 
-  const jobs = Array.from(new Set(data.map((person) => person.job)));
+  const jobs = Array.from(new Set(data.map((user) => user.job)));
 
   return (
     <div>
@@ -104,7 +104,7 @@ function App() {
       </h3>
       {isMembersVisible &&
         jobs.map((job, jobIdx) => (
-          <JobList key={jobIdx} job={job} people={data} />
+          <JobList key={jobIdx} job={job} users={data} />
         ))}
       <div>
         <label>グループ数: </label>

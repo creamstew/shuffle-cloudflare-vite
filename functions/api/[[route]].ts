@@ -1,8 +1,8 @@
-import type { Person } from "@/types/Person";
+import type { User } from "@/types/User";
 import { Hono } from "hono";
 import { handle } from "hono/cloudflare-pages";
 
-const data: Person[] = [
+const data: User[] = [
   {
     name: "山田 太郎",
     job: "エンジニア",
@@ -67,7 +67,7 @@ const data: Person[] = [
 
 const app = new Hono().basePath("/api");
 
-app.get("/people", (c) => {
+app.get("/users", (c) => {
   return c.json(data);
 });
 
@@ -91,7 +91,7 @@ app.get("/people", (c) => {
 //   };
 // };
 
-// const fetchNotionData = async (env: Env["Bindings"]): Promise<Person[]> => {
+// const fetchNotionData = async (env: Env["Bindings"]): Promise<User[]> => {
 //   const notionApiUrl = `https://api.notion.com/v1/databases/${env.NOTION_DATABASE_ID}/query`;
 
 //   const headers = {
