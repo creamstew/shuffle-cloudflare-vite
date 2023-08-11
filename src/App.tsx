@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type Person = {
   name: string;
@@ -147,8 +147,20 @@ function App() {
 
   const jobs = Array.from(new Set(data.map((person) => person.job)));
 
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const res = await fetch("/api/hello");
+      const data = await res.json();
+      setMessage(data.message);
+    };
+    fetchData();
+  }, []);
+
   return (
     <div>
+      <h1>{message}</h1>
       <h3 onClick={() => setIsMembersVisible((prev) => !prev)}>
         メンバー (クリックして表示)
       </h3>
