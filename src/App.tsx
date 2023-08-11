@@ -1,5 +1,5 @@
 import type { Person } from "@/types/Person";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import useSWR from "swr";
 
 type JobListProps = {
@@ -77,15 +77,20 @@ const useShuffleAndGroupPeople = (
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
+const DEFAULT_NUM_GROUPS = 2;
+
 function App() {
   const { data, error, isLoading } = useSWR<Person[]>("/api/people", fetcher);
   const [groups, setGroups] = useState<Person[][]>([]);
-  const [numGroups, setNumGroups] = useState<number>(2);
+  const [numGroups, setNumGroups] = useState<number>(DEFAULT_NUM_GROUPS);
   const [isMembersVisible, setIsMembersVisible] = useState(false);
 
   const shuffleAndGroupPeople = useShuffleAndGroupPeople(data, numGroups);
 
-  const handleShuffle = () => setGroups(shuffleAndGroupPeople());
+  const handleShuffle = useCallback(
+    () => setGroups(shuffleAndGroupPeople()),
+    [shuffleAndGroupPeople]
+  );
 
   if (error) return <div>failed to load</div>;
   if (isLoading || !data) return <div>loading...</div>;
