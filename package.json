@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "pages-dev": "wrangler pages dev -- npx vite",
+    "pages-dev": "wrangler pages dev --persist -- npx vite",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
@@ -17,6 +17,7 @@
     "swr": "^2.2.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20230807.0",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
     "@typescript-eslint/eslint-plugin": "^6.0.0",

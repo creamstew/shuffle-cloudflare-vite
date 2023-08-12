@@ -1,74 +1,18 @@
-import type { User } from "@/types/User";
+import type { D1Database } from "@cloudflare/workers-types";
 import { Hono } from "hono";
 import { handle } from "hono/cloudflare-pages";
 
-const data: User[] = [
-  {
-    name: "山田 太郎",
-    job: "エンジニア",
-    department: "プロダクト事業部",
-  },
-  {
-    name: "佐藤 次郎",
-    job: "エンジニア",
-    department: "プロダクト事業部",
-  },
-  {
-    name: "鈴木 三郎",
-    job: "エンジニア",
-    department: "プロダクト事業部",
-  },
-  {
-    name: "高橋 四郎",
-    job: "エンジニア",
-    department: "プロダクト事業部",
-  },
-  {
-    name: "田中 五郎",
-    job: "エンジニア",
-    department: "プロダクト事業部",
-  },
-  {
-    name: "伊藤 六郎",
-    job: "デザイナー",
-    department: "プロダクト事業部",
-  },
-  {
-    name: "渡辺 七郎",
-    job: "デザイナー",
-    department: "プロダクト事業部",
-  },
-  {
-    name: "山本 八郎",
-    job: "デザイナー",
-    department: "プロダクト事業部",
-  },
-  {
-    name: "中村 九郎",
-    job: "セールス",
-    department: "セールス事業部",
-  },
-  {
-    name: "小林 十郎",
-    job: "セールス",
-    department: "セールス事業部",
-  },
-  {
-    name: "加藤 十一郎",
-    job: "セールス",
-    department: "セールス事業部",
-  },
-  {
-    name: "吉田 十二郎",
-    job: "セールス",
-    department: "セールス事業部",
-  },
-];
+type Env = {
+  Bindings: {
+    DB: D1Database;
+  };
+};
 
-const app = new Hono().basePath("/api");
+const app = new Hono<Env>().basePath("/api");
 
-app.get("/users", (c) => {
-  return c.json(data);
+app.get("/users", async (c) => {
+  const { results } = await c.env.DB.prepare("SELECT * FROM Users").all();
+  return c.json(results);
 });
 
 // Notion API を使う場合

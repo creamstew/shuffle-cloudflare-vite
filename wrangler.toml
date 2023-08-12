@@ -1,0 +1,7 @@
+compatibility_date = "2023-08-07"
+compatibility_flags = ["streams_enable_constructors"]
+
+[[ d1_databases ]]
+binding = "DB" # i.e. available in your Worker on env.DB
+database_name = "${DATABASE_NAME}"
+database_id = "${DATABASE_ID}"
